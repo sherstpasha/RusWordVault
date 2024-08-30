@@ -57,10 +57,3 @@ def get_alphabet(words=False, pre_reform_words=False, phrases=False):
         return "Предупреждение: Ни один словарь не был выбран."
 
     return all_characters
-
-# Пример использования функций
-combined_words = get_dictionary(words=True, pre_reform_words=False, phrases=True)
-combined_alphabet = get_alphabet(words=True, pre_reform_words=False, phrases=True)
-
-print(f"Количество слов в объединённом словаре: {len(combined_words)}")
-print(f"Уникальных символов в объединённом алфавите: {len(combined_alphabet)}")
