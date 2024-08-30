@@ -1,72 +1,66 @@
-def get_dictionary(pre_reform=False):
+def get_dictionary(words=False, pre_reform_words=False, phrases=False):
     """
-    Возвращает весь словарь в виде кортежа. Если pre_reform=True, загружается словарь pre_reform_words.txt.
-    В противном случае загружается словарь words.txt.
+    Возвращает объединённый словарь в виде кортежа. Загрузка словарей происходит в зависимости от переданных аргументов.
 
-    :param pre_reform: Булев параметр, указывающий, какой словарь загрузить. 
-                       Если True, загружается pre_reform_words.txt, иначе words.txt.
-    :return: Кортеж, содержащий все слова из выбранного словаря.
+    :param words: Булев параметр, указывающий, загружать ли словарь words.txt.
+    :param pre_reform_words: Булев параметр, указывающий, загружать ли словарь pre_reform_words.txt.
+    :param phrases: Булев параметр, указывающий, загружать ли словарь phrases.txt.
+    :return: Кортеж, содержащий все слова из выбранных словарей, или предупреждение, если ни один словарь не выбран.
     """
-    file_name = 'pre_reform_words.txt' if pre_reform else 'words.txt'
+    all_words = []
+
+    if words:
+        with open('words.txt', 'r', encoding='utf-8') as file:
+            all_words.extend(file.read().splitlines())
     
-    with open(file_name, 'r', encoding='utf-8') as file:
-        words = tuple(file.read().splitlines())
+    if pre_reform_words:
+        with open('pre_reform_words.txt', 'r', encoding='utf-8') as file:
+            all_words.extend(file.read().splitlines())
     
-    return words
+    if phrases:
+        with open('phrases.txt', 'r', encoding='utf-8') as file:
+            all_words.extend(file.read().splitlines())
 
-def get_alphabet(pre_reform=False):
+    if not all_words:
+        return "Предупреждение: Ни один словарь не был выбран."
+
+    return tuple(all_words)
+
+
+def get_alphabet(words=False, pre_reform_words=False, phrases=False):
     """
-    Возвращает алфавит, использующийся в словаре. Если pre_reform=True, загружается алфавит для pre_reform_words.txt.
-    В противном случае загружается алфавит для words.txt.
+    Возвращает объединённый алфавит из выбранных словарей в виде множества (set).
 
-    :param pre_reform: Булев параметр, указывающий, какой алфавит загрузить. 
-                       Если True, используется алфавит для pre_reform_words.txt, иначе для words.txt.
-    :return: Кортеж, содержащий все уникальные символы (алфавит) из выбранного словаря.
+    :param words: Булев параметр, указывающий, загружать ли алфавит для words.txt.
+    :param pre_reform_words: Булев параметр, указывающий, загружать ли алфавит для pre_reform_words.txt.
+    :param phrases: Булев параметр, указывающий, загружать ли алфавит для phrases.txt.
+    :return: Множество, содержащее все уникальные символы (алфавит) из выбранных словарей, или предупреждение, если ни один словарь не выбран.
     """
-    file_name = 'pre_reform_words.txt' if pre_reform else 'words.txt'
-    
-    with open(file_name, 'r', encoding='utf-8') as file:
-        content = file.read()
-        alphabet = tuple(sorted(set(content.replace('\n', ''))))  # Уникальные символы без учета переносов строк
-    
-    return alphabet
+    all_characters = set()
 
+    if words:
+        with open('words.txt', 'r', encoding='utf-8') as file:
+            all_characters.update(file.read())
 
+    if pre_reform_words:
+        with open('pre_reform_words.txt', 'r', encoding='utf-8') as file:
+            all_characters.update(file.read())
 
-import pandas as pd
+    if phrases:
+        with open('phrases.txt', 'r', encoding='utf-8') as file:
+            all_characters.update(file.read())
 
-def split_and_save_to_excel(input_file, chunk_size=5000):
-    """
-    Разбивает файл на куски по определенному количеству строк и сохраняет их в отдельные строки Excel.
+    # Удаляем символы новой строки, так как они не должны учитываться в алфавите
+    all_characters.discard('\n')
 
-    :param input_file: Путь к текстовому файлу.
-    :param chunk_size: Количество строк в каждом куске (по умолчанию 5000).
-    """
-    # Чтение всех строк из файла
-    with open(input_file, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
+    if not all_characters:
+        return "Предупреждение: Ни один словарь не был выбран."
 
-    # Определение количества чанков
-    num_chunks = (len(lines) + chunk_size - 1) // chunk_size
+    return all_characters
 
-    # Создание Excel writer
-    excel_file = input_file.replace('.txt', '.xlsx')
-    writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
+# Пример использования функций
+combined_words = get_dictionary(words=True, pre_reform_words=False, phrases=True)
+combined_alphabet = get_alphabet(words=True, pre_reform_words=False, phrases=True)
 
-    # Разделение и сохранение в разные строки Excel
-    chunked_lines = [
-        ''.join(lines[i * chunk_size:(i + 1) * chunk_size])
-        for i in range(num_chunks)
-    ]
-    df = pd.DataFrame(chunked_lines, columns=['Phrases'])
-    df.to_excel(writer, sheet_name='Sheet1', index=False)
-
-    # Сохранение Excel файла
-    writer.save()
-    print(f"Файл сохранен как {excel_file}")
-
-# Пример использования функции
-input_file_path = 'phrases.txt'  # Укажите путь к вашему файлу phrases.txt
-split_and_save_to_excel(input_file_path)
-
-
+print(f"Количество слов в объединённом словаре: {len(combined_words)}")
+print(f"Уникальных символов в объединённом алфавите: {len(combined_alphabet)}")
